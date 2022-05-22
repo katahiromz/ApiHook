@@ -18,7 +18,7 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         EndDialog(hwnd, id);
         break;
     case psh1:
-        MessageBox(hwnd, TEXT("Unhooked!"), TEXT("Unhooked!"), MB_ICONINFORMATION);
+        MessageBox(hwnd, TEXT("Being Unhooked!"), TEXT("Being Unhooked!"), MB_ICONINFORMATION);
         break;
     }
 }

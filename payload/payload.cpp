@@ -5,14 +5,14 @@
 EXTERN_C __declspec(dllexport)
 INT WINAPI DetourMessageBoxA(HWND hwnd, LPCWSTR text, LPCWSTR title, UINT uType)
 {
-    return MessageBoxA(hwnd, "Hooked!", "Hooked!", uType);
+    return MessageBoxA(hwnd, "Being Hooked!", "Being Hooked!", uType);
 }
 
 
 EXTERN_C __declspec(dllexport)
 INT WINAPI DetourMessageBoxW(HWND hwnd, LPCWSTR text, LPCWSTR title, UINT uType)
 {
-    return MessageBoxW(hwnd, L"Hooked!", L"Hooked!", uType);
+    return MessageBoxW(hwnd, L"Being Hooked!", L"Being Hooked!", uType);
 }
 
 EXTERN_C BOOL WINAPI

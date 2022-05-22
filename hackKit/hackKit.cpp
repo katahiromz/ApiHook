@@ -2,8 +2,10 @@
 #include <psapi.h>
 #include <shlwapi.h>
 #include <imagehlp.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <tchar.h>
 #include "../config.h"
 
 #pragma comment(lib, "shlwapi.lib")
@@ -572,6 +574,8 @@ doImportTable(HMODULE hModule, PIMAGE_IMPORT_DESCRIPTOR pImport, LPCSTR pszFuncN
             return fnOriginal;
         }
     }
+
+    return NULL;
 }
 
 LPVOID doHookAPI(LPCSTR pszModuleName, LPCSTR pszFuncName, LPVOID fnNew)
@@ -598,11 +602,23 @@ LPVOID doHookAPI(LPCSTR pszModuleName, LPCSTR pszFuncName, LPVOID fnNew)
 
         DWORD dwSize;
         PIMAGE_IMPORT_DESCRIPTOR pImport;
-        pImport = (PIMAGE_IMPORT_DESCRIPTOR)ImageDirectoryEntryToData(hModule, TRUE, IMAGE_DIRECTORY_ENTRY_IMPORT, &dwSize);
+        pImport = (PIMAGE_IMPORT_DESCRIPTOR)ImageDirectoryEntryToData(
+            hModule, TRUE, IMAGE_DIRECTORY_ENTRY_IMPORT, &dwSize);
         LPVOID fnOriginal = doImportTable(hModule, pImport, pszFuncName, fnNew);
         if (fnOriginal)
             return fnOriginal;
     }
 
     return NULL;
+}
+
+BOOL startProcess(LPCTSTR cmdline, STARTUPINFO& si, PROCESS_INFORMATION& pi,
+                  DWORD dwCreation, LPCTSTR pszCurDir)
+{
+    assert(cmdline);
+    LPTSTR pszCmdLine = _tcsdup(cmdline);
+    assert(pszCmdLine);
+    BOOL ret = CreateProcess(NULL, pszCmdLine, NULL, NULL, TRUE, dwCreation, NULL, pszCurDir, &si, &pi);
+    free(pszCmdLine);
+    return ret;
 }
