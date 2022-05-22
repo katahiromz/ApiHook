@@ -51,6 +51,11 @@ void OnUninject(HWND hwnd)
 
 BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 {
+    TCHAR szExeFile[MAX_PATH];
+    szExeFile[0] = TEXT('"');
+    getSameFolderPathName(&szExeFile[1], TARGET_NAME TEXT(".exe"));
+    lstrcat(szExeFile, TEXT("\""));
+    SetDlgItemText(hwnd, edt1, szExeFile);
     return TRUE;
 }
 

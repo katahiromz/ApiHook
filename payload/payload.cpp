@@ -22,15 +22,13 @@ DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
     switch (fdwReason)
     {
     case DLL_PROCESS_ATTACH:
-        s_fnOldMessageBoxA = doHookAPI("user32.dll", "MessageBoxA", (LPVOID)DetourMessageBoxA);
-        s_fnOldMessageBoxW = doHookAPI("user32.dll", "MessageBoxW", (LPVOID)DetourMessageBoxW);
+        s_fnOldMessageBoxA = doHookAPI(NULL, "user32.dll", "MessageBoxA", (LPVOID)DetourMessageBoxA);
+        s_fnOldMessageBoxW = doHookAPI(NULL, "user32.dll", "MessageBoxW", (LPVOID)DetourMessageBoxW);
         break;
 
     case DLL_PROCESS_DETACH:
-        if (s_fnOldMessageBoxA)
-            doHookAPI("user32.dll", "MessageBoxA", s_fnOldMessageBoxA);
-        if (s_fnOldMessageBoxW)
-            doHookAPI("user32.dll", "MessageBoxW", s_fnOldMessageBoxW);
+        doHookAPI(NULL, "user32.dll", "MessageBoxA", s_fnOldMessageBoxA);
+        doHookAPI(NULL, "user32.dll", "MessageBoxW", s_fnOldMessageBoxW);
         break;
     }
     return TRUE;
