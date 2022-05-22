@@ -9,32 +9,44 @@
 #include "../config.h"
 #include "../hackKit/hackKit.h"
 
+DWORD g_dwProcessId = 0;
+TCHAR g_szText[MAX_PATH * 3];
+
 void OnStart(HWND hwnd)
 {
     TCHAR szDllFile[MAX_PATH];
     getSameFolderPathName(szDllFile, PAYLOAD_NAME TEXT(".dll"));
 
-    static TCHAR s_szText[MAX_PATH * 3];
-    GetDlgItemText(hwnd, edt1, s_szText, _countof(s_szText));
+    GetDlgItemText(hwnd, edt1, g_szText, _countof(g_szText));
 
     PROCESS_INFORMATION pi = { NULL };
     STARTUPINFO si = { sizeof(si) };
     si.dwFlags = STARTF_USESHOWWINDOW;
     si.wShowWindow = SW_SHOWNORMAL;
-    BOOL ret = startProcess(s_szText, si, pi, CREATE_NEW_CONSOLE | CREATE_SUSPENDED, NULL);
+    BOOL ret = startProcess(g_szText, si, pi, CREATE_NEW_CONSOLE | CREATE_SUSPENDED, NULL);
     if (!ret)
     {
         MessageBox(hwnd, TEXT("Cannot start process!"), TEXT("FAILED"), MB_ICONERROR);
         return;
     }
 
-    if (!doInjectDll(szDllFile, pi.dwProcessId))
+    g_dwProcessId = pi.dwProcessId;
+    if (!doInjectDll(szDllFile, g_dwProcessId))
         MessageBox(hwnd, TEXT("Cannot inject!"), TEXT("FAILED"), MB_ICONERROR);
 
     ResumeThread(pi.hThread);
 
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
+}
+
+void OnUninject(HWND hwnd)
+{
+    TCHAR szDllFile[MAX_PATH];
+    getSameFolderPathName(szDllFile, PAYLOAD_NAME TEXT(".dll"));
+
+    if (!doUninjectDll(szDllFile, g_dwProcessId))
+        MessageBox(hwnd, TEXT("Cannot uninject!"), TEXT("FAILED"), MB_ICONERROR);
 }
 
 BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
@@ -44,10 +56,10 @@ BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 
 void OnBrowse(HWND hwnd)
 {
-    TCHAR szFile[MAX_PATH] = TEXT("");
+    TCHAR szFile[MAX_PATH + 2] = TEXT("\"");
     OPENFILENAME ofn = { sizeof(ofn), hwnd };
     ofn.lpstrFilter = TEXT("Executable (*.exe)\0*.exe\0");
-    ofn.lpstrFile = szFile;
+    ofn.lpstrFile = &szFile[1];
     ofn.nMaxFile = _countof(szFile);
     ofn.lpstrTitle = TEXT("Choose executable");
     ofn.Flags = OFN_EXPLORER | OFN_DONTADDTORECENT | OFN_ENABLESIZING |
@@ -55,6 +67,7 @@ void OnBrowse(HWND hwnd)
     ofn.lpstrDefExt = TEXT("ext");
     if (GetOpenFileName(&ofn))
     {
+        lstrcat(szFile, TEXT("\""));
         SetDlgItemText(hwnd, edt1, szFile);
     }
 }
@@ -72,6 +85,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case psh2:
         OnBrowse(hwnd);
+        break;
+    case psh3:
+        OnUninject(hwnd);
         break;
     }
 }
