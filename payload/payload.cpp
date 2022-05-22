@@ -8,7 +8,6 @@ INT WINAPI DetourMessageBoxA(HWND hwnd, LPCWSTR text, LPCWSTR title, UINT uType)
     return MessageBoxA(hwnd, "Being Hooked!", "Being Hooked!", uType);
 }
 
-
 EXTERN_C __declspec(dllexport)
 INT WINAPI DetourMessageBoxW(HWND hwnd, LPCWSTR text, LPCWSTR title, UINT uType)
 {
